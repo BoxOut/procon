@@ -146,7 +146,155 @@ static int[][][]   tree_in(Reader sc,int n) throws Exception, IOException{
     return r;
  }
 **************************************************************************
+exGCD
+public static long[] exGCD(long a, long b)
+{
+    if(a == 0 || b == 0)return null;
+    int as = Long.signum(a);
+    int bs = Long.signum(b);
+    a = Math.abs(a); b = Math.abs(b);
+    long p = 1, q = 0, r = 0, s = 1;
+    while(b > 0){
+        long c = a / b;
+        long d;
+        d = a; a = b; b = d % b;
+        d = p; p = q; q = d - c * q;
+        d = r; r = s; s = d - c * s;
+    }// can be minus! 
+    return new long[]{a, p * as, r * bs};
+}
+
+
+  class QuickUnionWeighted {
+     public int[] id;
+     private int[] sz;
+     public QuickUnionWeighted(int N)
+     {
+         id = new int[N];
+         sz = new int[N];
+         for (int i = 0; i < N; i++) {
+             id[i] = i;
+             sz[i] = 1;
+         }
+     }
+     
+     private int root(int p) {
+         while (id[p] != p) p = id[p];
+         return p;
+     }
+     
+     public boolean connected(int id1, int id2) {
+         return root(id1) == root(id2);
+     }
+     
+     public void union(int p, int q) {
+         int i = root(p);
+         int j = root(q);
+         if( i==j )return;
+         if (sz[i] < sz[j]) { id[i] = j; sz[j] += sz[i];   }
+         else               { id[j] = i; sz[i] += sz[j];   }  
+     }
+     public int sz(int x){
+         return sz[ root(x) ];// weight
+     }
+  }
 **************************************************************************
+LCA
+    
+static ArrayList<Integer> l[];
+static int parent[][],depth[],node,max_log;
+
+static void tree_in(Reader sc) throws IOException{
+     
+     for (int i = 0; i < node-1 ; i++) {
+          int x=sc.nextInt()-1,y=sc.nextInt()-1;
+          if( l[x]==null )l[x]=new ArrayList<Integer>();
+          if( l[y]==null )l[y]=new ArrayList<Integer>();
+          l[x].add(y);l[y].add(x);
+    }
+     
+ }
+
+ static void dfs(int v,int p, int d){
+     
+     parent[0][v]=p;
+     depth[v]=d;
+     
+     for (int i = 0; i < l[v].size() ; i++) {
+        
+         int e=l[v].get(i);
+         if( p!=e )dfs(e,v,d+1);
+         
+    }
+     
+ }
+  
+ static void init_lca(){
+     
+     dfs(0,-1,0); //root=0  
+     
+      for (int k = 0; k+1 < max_log ; k++) {
+        for (int v = 0; v < node ; v++) {
+            if(parent[k][v]<0)parent[k+1][v]=-1;
+            else parent[k+1][v]=parent[k][parent[k][v]];    
+        }
+    }
+      
+ }
+ 
+ static int lca(int u,int v){
+     
+     if(depth[u]>depth[v]){   
+         //swap
+         int x=u;
+         u=v;v=x; 
+     }
+    // going to same depth   
+     for (int k = 0; k < max_log; k++) {
+        if( 0<((depth[v]-depth[u])>>k & 1) )v=parent[k][v];
+    }
+     
+     if(v==u)return u;
+     
+     for (int k = max_log-1; 0 <= k; k--) {
+        if(parent[k][u]!=parent[k][v]){
+            u=parent[k][u];
+            v=parent[k][v];
+        }
+    }
+     return parent[0][u];
+ }
+
 **************************************************************************
+二項係数 mod　nCm
+
+long fr[]=new long[sz];
+long inv[]=new long[sz];
+
+fr[0]=inv[0] = 1;
+fr[1]=inv[1] = 1;
+int mod=1000000007;
+
+for (int i = 2; i <sz; ++i){
+    inv[i] = inv[mod % i] * (mod - mod / i) % mod ;
+}
+
+for (int i = 2; i <sz; ++i){
+    fr[i]=fr[i-1]*i %mod;
+    inv[i]=inv[i-1]*inv[i] %mod;
+}
+
+**************************************************************************
+1~nの逆元を求める(mod m)
+vector<ll> list_mod_inverse(ll n, ll m)
+{
+    vector<ll> inv(n + 1);
+    inv[1] = 1;
+    for (int i = 2; i <= n; ++i)
+        inv[i] = inv[m % i] * (m - m / i) % m;
+    return inv;
+}
+**************************************************************************
+
 
 ATCODER.standings.pagination.per_page = 10000000
