@@ -1,0 +1,152 @@
+*****************************************************************************
+有向グラフの閉路検出
+d[i][t]: edge i->t
+m[]	: 一時的なフラグ
+f[] :　永久的なフラグ
+	static boolean rep(int x, int d[][], boolean m[], boolean f[]) {
+		for(int i=0; i<26; i++){
+			if( d[x][i]>0 && !f[i]) {
+				if( m[i] )return false;
+				else {
+					m[x] = true; 
+					boolean r = rep(i ,d, m ,f); 
+					if( !r )return r;
+					m[x] = false;
+				}
+			}
+		}
+		f[x] = true;
+		return true;
+	}
+使用法
+boolean f[] = new boolean [26];
+		for (int i = 0; i < d.length; i++) {
+			if(f[i])continue;
+			if( !rep(i, d, new boolean[26],f ) )return "Impossible";
+}
+**************************************************************************
+ダイクストラ
+double d[] = new double[n];
+fill(d, 1L<<40);
+d[start_id] = 0;
+int from = sc.nextInt() - 1, to = sc.nextInt() - 1;
+                
+PriorityQueue<P> que = new PriorityQueue<P>();
+que.add(new P(start_id, d[start_id]));
+
+while(!que.isEmpty()) {
+    P p = que.poll();
+    int cr = p.v;
+    if(d[cr] < p.d) continue;
+    for( int t=0; t<n; t++ ){
+        if(edge[cr][t] < 0) continue;
+        if( d[t] > d[cr] + edge[cr][t]) {
+            d[t] = d[cr] + edge[cr][t];
+            que.add(new P(t, d[t]));
+        }
+    }
+}              
+**************************************************************************
+// Segment Tree
+class segtree {
+     int seg1[],seg2[];
+     /*
+     N:問題の最大サイズ
+     [a,b)にcを足す、
+    sg.add(a, b+1, c, 0, 0, N);
+     区間和[a,b)、
+    sg.sum(a, b+1, 0, 0, N);
+     */
+     segtree(){ 
+                //   n<=100000 0-based each [a,b)
+         seg1=new int[(1<<18)-1];
+         seg2=new int[(1<<18)-1];
+     }
+    void add(int a,int b,int x,int k,int l,int r){
+        //System.out.println(a+" "+b+" "+ l+" "+r+" "+k);
+        if( a<=l && r<=b ){ seg1[k]+=x; }
+        else if( l<b && a<r  ){
+            seg2[k]+= x*( min(r,b)-max(a,l) );
+         add(a,b,x,2*k+1,l,(l+r)/2);
+         add(a,b,x,2*k+2,(l+r)/2,r);    
+        }
+            
+    }
+    int sum(int a,int b,int k,int l,int r){
+        if( b<=l || r<=a )return 0;
+        if( a<=l && r<=b ){ return seg1[k]*(r-l)+seg2[k]; }
+        else{
+        int res=0;
+         res+= seg1[k]*( min(r,b)-max(a,l) );
+         res+=sum(a,b,2*k+1,l,(l+r)/2);
+         res+=sum(a,b,2*k+2,(l+r)/2,r); 
+         return res;
+        }
+    }
+ }
+**************************************************************************
+// BIT
+class bit {
+    int b[],n;
+    bit(int n){
+        this.n = n;
+        b = new int[n+1];
+    }
+    int sum(int i){
+        int s = 0;
+        while(i > 0){
+            s += b[i];
+            i -= i&-i;
+        }
+        return s;   
+    }
+    void add(int i, int x){
+        while(i <= n){
+            b[i] += x;
+            i += i&-i;
+        }
+    }
+}
+*********************************simple tools************************************
+ソート済み整数配列を圧縮
+static int[] unique_array(int d[]) {
+    //d:sorted
+    int id = 1;
+    for( int i=1; i<d.length; i++ ){
+        if(d[i]!=d[id-1]){
+            d[id++] = d[i];
+        }
+    }
+    return copyOf(d, id);
+}
+*********************************tree input**********************************
+static int[][][]   tree_in(Reader sc,int n) throws Exception, IOException{
+    int r[][][]=new int[n][][]; //heavy edge
+    //int r[][];  // edge 1
+
+    int pr[]=new int[n-1];
+    int ch[]=new int[n-1];
+    int ds[]=new int[n-1]; //distance
+    int dg[]=new int[n];   //degree
+
+    for (int i=0; i<n-1; i++) {
+        int a=sc.nextInt(),b=sc.nextInt(),d=sc.nextInt();
+        a--;b--;
+        pr[i]=a; ch[i]=b; ds[i]=d;
+        dg[a]++;dg[b]++;
+    }
+    for (int i=0; i<n; i++) r[i]=new int[dg[i]][2]
+    for (int i=0; i<n-1; i++) {
+       int a=pr[i],b=ch[i],d=ds[i];
+       r[ a ][dg[a]-1][0]=b;
+       r[ a ][--dg[a]][1]=d;
+       r[ b ][dg[b]-1][0]=a;
+       r[ b ][--dg[b]][1]=d;
+    }
+    return r;
+ }
+**************************************************************************
+**************************************************************************
+**************************************************************************
+
+ATCODER.standings.pagination.per_page = 10000000
